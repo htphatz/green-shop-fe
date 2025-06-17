@@ -11,7 +11,7 @@ import {
 export const revenueApi = createApi({
   reducerPath: "revenueApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://oarfish-relaxing-whippet.ngrok-free.app",
+    baseUrl: "http://103.101.162.14:8080",
     prepareHeaders: (headers) => {
       if (typeof window !== 'undefined') {
         const token = storage.getItem("accessToken");
