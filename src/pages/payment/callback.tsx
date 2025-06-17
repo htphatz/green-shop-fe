@@ -28,7 +28,7 @@ const PaymentCallback = () => {
       // Check if user is coming from backend callback (has all VNPay params but on wrong domain)
       const currentUrl = window.location.href;
       const isFromBackend = currentUrl.includes(
-        "oarfish-relaxing-whippet.ngrok-free.app"
+        "green-shop-fe.vercel.app"
       );
 
       if (isFromBackend) {

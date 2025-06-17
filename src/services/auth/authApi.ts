@@ -7,6 +7,7 @@ import {RegisterRequest, RegisterResponse, UserRes} from '@/types'
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: baseQueryConditional(['login', 'register']),
+  tagTypes: ["User"],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -49,6 +50,7 @@ export const authApi = createApi({
         url: `/auth/reactivate/${userId}`,
         method: "POST",
       }),
+      invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
     getCurrentUser: builder.query<UserRes['result'], void>({
       query: () => ({

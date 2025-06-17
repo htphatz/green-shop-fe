@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { useGetUsersQuery } from "@/services/admin/adminApi";
+import { useGetUsersQuery, adminApi } from "@/services/admin/adminApi";
+import { useReactivateUserMutation } from "@/services/auth/authApi";
+import { useDispatch } from "react-redux";
 import {
   Table,
   TableBody,
@@ -27,6 +29,8 @@ import {
   MoreHorizontal,
   User as UserIcon,
   AlertCircle,
+  ShieldCheck,
+  UserPlus,
 } from "lucide-react";
 import {
   Dialog,
@@ -45,23 +49,33 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const CustomersPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<User | null>(null);
+  const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
+  const [customerToReactivate, setCustomerToReactivate] = useState<User | null>(
+    null
+  );
 
   const {
     data: usersData,
     isLoading,
     isError,
+    refetch,
   } = useGetUsersQuery({
     pageNumber: page,
     pageSize,
   });
+
+  const [reactivateUser] = useReactivateUserMutation();
 
   const users = usersData?.items || [];
   const totalPages = usersData?.totalPages || 0;
@@ -95,6 +109,37 @@ const CustomersPage: React.FC = () => {
       } finally {
         setIsDeleting(false);
         setDeleteDialogOpen(false);
+      }
+    }
+  };
+
+  const confirmReactivate = (customer: User) => {
+    setCustomerToReactivate(customer);
+    setReactivateDialogOpen(true);
+  };
+
+  const handleReactivate = async () => {
+    if (customerToReactivate) {
+      setIsReactivating(true);
+      try {
+        await reactivateUser(customerToReactivate.id).unwrap();
+        toast.success(
+          `Customer ${customerToReactivate.firstName} ${customerToReactivate.lastName} has been reactivated successfully.`
+        );
+        // Invalidate and refetch users data to update UI immediately
+        dispatch(adminApi.util.invalidateTags([{ type: "User", id: "LIST" }]));
+        refetch();
+      } catch (error: any) {
+        console.error("Error reactivating customer:", error);
+        toast.error(
+          `Failed to reactivate customer. ${
+            error?.data?.message || "Please try again."
+          }`
+        );
+      } finally {
+        setIsReactivating(false);
+        setReactivateDialogOpen(false);
+        setCustomerToReactivate(null);
       }
     }
   };
@@ -252,9 +297,13 @@ const CustomersPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300`}
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          customer.active !== false
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                            : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
+                        }`}
                       >
-                        Active
+                        {customer.active !== false ? "Active" : "Blocked"}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -273,12 +322,14 @@ const CustomersPage: React.FC = () => {
                             Actions
                           </DropdownMenuLabel>
 
-                          <DropdownMenuItem
-                            onClick={() => confirmDelete(customer)}
-                            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            Delete Customer
-                          </DropdownMenuItem>
+                          {customer.active === false && (
+                            <DropdownMenuItem
+                              onClick={() => confirmReactivate(customer)}
+                              className="text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            >
+                              Reactivate Account
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -357,6 +408,48 @@ const CustomersPage: React.FC = () => {
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reactivate Confirmation Dialog */}
+      <Dialog
+        open={reactivateDialogOpen}
+        onOpenChange={setReactivateDialogOpen}
+      >
+        <DialogContent className="bg-white dark:bg-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-green-600" />
+              Reactivate Account
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
+              Are you sure you want to reactivate this customer's account?
+              <br />
+              <strong>
+                {customerToReactivate?.firstName}{" "}
+                {customerToReactivate?.lastName}
+              </strong>{" "}
+              will regain access to their account and be able to use all
+              services.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReactivateDialogOpen(false)}
+              className="border-gray-200 dark:border-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleReactivate}
+              disabled={isReactivating}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isReactivating ? "Reactivating..." : "Reactivate"}
             </Button>
           </DialogFooter>
         </DialogContent>
