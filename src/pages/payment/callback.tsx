@@ -202,7 +202,7 @@ const PaymentCallback = () => {
                 </p>
                 <div className="mt-2 p-2 bg-white dark:bg-gray-800 rounded border text-xs font-mono break-all">
                   {window.location.href.replace(
-                    "oarfish-relaxing-whippet.ngrok-free.app",
+                    "green-shop-fe.vercel.app",
                     "localhost:5173"
                   )}
                 </div>
@@ -215,7 +215,7 @@ const PaymentCallback = () => {
               <Button
                 onClick={() => {
                   const frontendUrl = window.location.href.replace(
-                    "oarfish-relaxing-whippet.ngrok-free.app",
+                    "green-shop-fe.vercel.app",
                     "localhost:5173"
                   );
                   window.open(frontendUrl, "_blank");
