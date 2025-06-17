@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import * as storage from "@/lib/storage";
+import { BASE_URL } from "@/lib/constants";
 import {
   RevenueRequest,
   RevenueResponse,
@@ -11,7 +12,7 @@ import {
 export const revenueApi = createApi({
   reducerPath: "revenueApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://103.101.162.14:8080",
+    baseUrl: BASE_URL,
     prepareHeaders: (headers) => {
       if (typeof window !== 'undefined') {
         const token = storage.getItem("accessToken");
