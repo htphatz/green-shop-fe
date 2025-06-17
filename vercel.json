@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "http://103.101.162.14:8080/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
