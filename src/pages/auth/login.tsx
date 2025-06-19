@@ -201,7 +201,7 @@ const Login: React.FC = () => {
         />
         <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-green-950/80 to-transparent">
           <h2 className="text-3xl font-bold text-white mb-2">
-            Green Shop ^^
+            Green Shop test CI/CD
           </h2>
           <p className="text-green-100">
             Fresh organic produce directly from our farms to your table
